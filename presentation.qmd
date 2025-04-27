@@ -7,7 +7,16 @@ format: beamer
 # thoughts
 - epidemiology is making head room
 - causal inference (anderson-rubin tradition) and time series don't talk to each other
+- dpdm
 
 # significance
 - ajr-type papers
+- part of the causal revolution-revolution: calloway & santana, rainfall issues
 
+# misspecified model
+- does not recover parameters
+
+# note
+- no new instruments necessary
+
+# minimum T necessary
