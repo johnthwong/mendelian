@@ -1,0 +1,13 @@
+---
+title: "Dealing With Time-Variant Instrumentation"
+author: "John T.H. Wong"
+format: beamer
+---
+
+# thoughts
+- epidemiology is making head room
+- causal inference (anderson-rubin tradition) and time series don't talk to each other
+
+# significance
+- ajr-type papers
+
