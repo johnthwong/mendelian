@@ -174,7 +174,10 @@ $$
 \end{aligned}
 $$
 
-# What we are doing, in VAR terms
+# Estimation
+
+We simulate then estimate the following equations:
+
 $$
 \begin{aligned}
 y_{it}  = \beta d_{it} + \alpha_{11} y_{i,t-1} + \alpha_{12} d_{i,t-1}  + \epsilon_{y,it}
@@ -184,20 +187,22 @@ $$
 
 \pause
 
+In VAR terms:
+
 $$
 \begin{aligned}
-\text{or } \begin{bmatrix} 1 & -\beta \\ \color{red}{0} & 1\end{bmatrix} \begin{bmatrix} y_{it} \\ d_{it} \end{bmatrix} = \begin{bmatrix} \alpha_{11} & \alpha_{12} \\ \alpha_{21} & \alpha_{22} \end{bmatrix} \begin{bmatrix} y_{i, t-1} \\ d_{i,t-1}\end{bmatrix} + \begin{bmatrix} \color{red}{0} \\ \delta \end{bmatrix} z_i + \begin{bmatrix}\epsilon_{y,it} \\ \epsilon_{d,it}\end{bmatrix}.
+\begin{bmatrix} 1 & -\beta \\ \color{red}{0} & 1\end{bmatrix} \begin{bmatrix} y_{it} \\ d_{it} \end{bmatrix} = \begin{bmatrix} \alpha_{11} & \alpha_{12} \\ \alpha_{21} & \alpha_{22} \end{bmatrix} \begin{bmatrix} y_{i, t-1} \\ d_{i,t-1}\end{bmatrix} + \begin{bmatrix} \color{red}{0} \\ \delta \end{bmatrix} z_i + \begin{bmatrix}\epsilon_{y,it} \\ \epsilon_{d,it}\end{bmatrix}.
 \end{aligned}
 $$
 
 \pause
 
 - Note that lagged outcome enters the first-stage equation.
-- We are simply conducting a Cholesky decomposition. 
+- Our procedure is analogous to a Cholesky decomposition.
 
 \pause
 
-## What most IV papers are doing, in VAR terms
+## What most historical IV papers are doing, in VAR terms
 $$
 \begin{aligned}
 \begin{bmatrix} 1 & -\beta \\ \color{red}{0} & 1\end{bmatrix} \begin{bmatrix} y_{it} \\ d_{it} \end{bmatrix} = \begin{bmatrix} \color{red}{0} & \color{red}{0} \\ \color{red}{0} & \color{red}{0} \end{bmatrix} \begin{bmatrix} y_{i, t-1} \\ d_{i,t-1}\end{bmatrix} + \begin{bmatrix} \color{red}{0} \\ \delta \end{bmatrix} z_i + \begin{bmatrix}\epsilon_{y,it} \\ \epsilon_{d,it}\end{bmatrix}.
@@ -224,6 +229,8 @@ table_solow
 plot_unbiased
 ```
 
+\pause
+
 ## Note that
 1. We did not need a second set of instruments.
 2. Our instruments needn't be time-variant.
@@ -238,12 +245,12 @@ plot_unbiased
   - Also, their theoretical derivations didn't hold up in my Monte Carlos.\pause
 - There is one development econ paper which talks about this (Casey and Klemp 2021), but their solution is questionable. 
   - They propose to estimate $d_{it}$ and $d_{i, t-Q}$, and instrument for the latter with $z_i$, and use the resulting parameter to adjust the second-stage equation parameter. \pause
-  - The lag length is arbitrary. And even if it works, their method can't recovers only a "long-run" parameter, not the instantaneous parameter that is of policy interest. \pause
+  - The lag length is arbitrary. And even if it works, their method only recovers a "long-run" parameter, not the instantaneous parameter that is of policy interest. \pause
 - There are actually a lot of time series tools that can help analyze and solve the problem. But the Anderson-Rubin causal inference people don't talk to the time series people or something?
 
 
 # Discussion: how important is this result?
 1. This does not require a time-variant treatment (unlike proxy SVARs, aka SVARs with external instruments). \pause
-    - In lieu, this setup reverts back to a Cholesky identification (but this is not an issue, and in fact taken as given, in the causal inference setting). \pause
-2. The causal literature has been misspecifying a lot of IV papers. \pause
-    - Part of the causal revolution-revolution: TWFE DID estimator (Callaway & Sant'Anna 2020), issues with geographic IVs (Mellon 2022).
+    - In lieu, this setup reverts back to a Cholesky identification (but this is not an issue, and in fact taken as given in the causal inference setting). \pause
+2. The development economics literature has been misspecifying a lot of IV papers. \pause
+3. A contribution to the causal revolution-revolution, e.g., issues with TWFE DID estimator (Callaway & Sant'Anna 2020), geographical IVs (Mellon 2022).
