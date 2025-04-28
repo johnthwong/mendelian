@@ -1,22 +1,249 @@
 ---
-title: "Dealing With Time-Variant Instrumentation"
+title: "The Problem With Historical Instrumental Variables"
+subtitle: "Alternative title: Identification of Bi-Directional Two-Variable System With Time-Invariant Instrument"
 author: "John T.H. Wong"
-format: beamer
+format: 
+  beamer:
+    theme: default
+    include-in-header: 
+      text: |
+        \usepackage{tikz}
+        \usetikzlibrary{arrows,shapes,positioning,shadows,trees}
+        \setbeamertemplate{footline}[frame number]
+execute:
+  echo: false
+  message: false
+  warning: false
 ---
 
-# thoughts
-- epidemiology is making head room
-- causal inference (anderson-rubin tradition) and time series don't talk to each other
-- dpdm
+# Illustrating the issue with a DAG
 
-# significance
-- ajr-type papers
-- part of the causal revolution-revolution: calloway & santana, rainfall issues
+- Many historical IV papers use the following strategy.
+  - e.g., AJR use settlers mortality ($z_i$) to instrument for constraints on the government's executive ($d_{it}$), and then estimate the latter's effect on output growth ($y_{it}$).
 
-# misspecified model
-- does not recover parameters
+\begin{figure}
+\centering
+\begin{tikzpicture}[node distance=2cm]
 
-# note
-- no new instruments necessary
+  % Nodes
+  \node (z)    {$z_i$};
+  \node (dt)    [right=of z] {$d_{it}$};
+  \node (yt)    [below=of dt] {$y_{it}$};
 
-# minimum T necessary
+  % Arrows
+  \draw[->, bend left=45] (z) to (dt);
+  \draw[->] (dt) -- (yt);
+
+\end{tikzpicture}
+\end{figure}
+
+\pause
+
+- $z_i$ must affect $y_{it}$ only through $d_{it}$. \pause
+
+- But note that $z_i$ is time-invariant, whereas $d_{it}$ is time-variant.
+
+# Illustrating the issue with a DAG
+\begin{figure}
+\centering
+\begin{tikzpicture}[node distance=2cm]
+
+  % Nodes
+  \node (z)    {$z_{i}$};
+  \node (dtm1)  [right=of z] {$d_{i,t-1}$};
+  \node (dt)    [right=of dtm1] {$d_{it}$};
+  \node (yt)    [below=of dt] {$y_{it}$};
+
+  % Arrows
+  \draw[->] (z) -- (dtm1);
+  \draw[->, bend left=45] (z) to (dt);
+  \draw[->] (dtm1) -- (dt);
+  \draw[->] (dtm1) -- (yt);
+  \draw[->] (dt) -- (yt);
+
+\end{tikzpicture}
+\end{figure}
+
+- If $z_i$ affects $d_{it}$, then it must also also affect $d_{i,t-1}$. \pause
+- We can add $d_{i, t-2}$, $d_{i, t-3}$, and so forth.
+
+# Theoretical model
+
+## Second-stage equation
+
+$$
+y_{it} = \beta_0 d_{it} + \beta_1 d_{i, t-1} + \epsilon_{y,it}.
+$$
+
+\pause
+- Note that this is a dynamic panel data model (DPDM).
+- This is quite similar to an autoregressive distributed lag (ADL) setup. \pause
+
+## First-stage equation
+
+$$
+d_{it} = \delta z_i + \alpha_0 d_{i,t-1} + \epsilon_{d, it}.
+$$
+
+\pause
+
+## What happens when we omit $d_{t-1}$?
+- Obtain the particular solution of the first-stage equation:
+
+$$
+d_{it} = (\delta  \sum_{j =0}^{\infty} a_1^j)z_{i}  + \underbrace{\sum_{j=0}^{\infty} a_1^j \epsilon_{i,t-j}}_{\text{Not iid!}}.
+$$
+
+
+# Let me prove it to you
+
+- I simulated a panel with 50 units, each with 1000 observations (to show the misspecified model is inconsistent). \pause
+
+```{r}
+#| results: asis
+#| tbl-cap: "Two-Stage Least Squares Results With Omitted Treatment Lag"
+
+source("code.R")
+table_omitted
+
+```
+
+# Monte Carlo Results
+- These results are consistently biased across samples. (Each unit has 100 observations.)
+
+```{r fig.height=4}
+#| fig-cap: "Monte Carlo Results, Omitted Treatment Lag (500 iterations; ± 2 SD shaded)"
+
+plot_biased
+```
+
+# Solution
+- Including $Ld_{it}$ in both stages of the equation leads to a consistent estimator on all variables.
+
+```{r}
+#| results: asis
+#| tbl-cap: "Two-stage least squares results with treatment lag"
+
+table_lagd
+
+```
+
+# Monte Carlo results
+
+```{r fig.height=4}
+#| fig-cap: "Monte Carlo results, with treatment lag (500 iterations; 50 units; 100 observations per unit; ± 2 SD shaded)"
+
+plot_labrecque
+```
+
+# Generalize to bi-directional Granger causation
+
+- What if $y_{t-1}$ feeds into $y_{it}$ *and* $d_{it}$?
+
+\begin{figure}
+\centering
+\begin{tikzpicture}[node distance=2cm]
+
+  % Nodes
+  \node (z)    {$z_{i}$};
+  \node (dtm1)  [right=of z] {$d_{i,t-1}$};
+  \node (dt)    [right=of dtm1] {$d_{it}$};
+  \node (yt)    [below=of dt] {$y_{it}$};
+  \node (ytm1)  [below=of dtm1] {$y_{i,t-1}$};
+
+  % Arrows
+  \draw[->] (z) -- (dtm1);
+  \draw[->, bend left=45] (z) to (dt);
+  \draw[->] (dtm1) -- (dt);
+  \draw[->] (dtm1) -- (yt);
+  \draw[->] (dt) -- (yt);
+  \draw[->] (dtm1) -- (ytm1);
+  \draw[->] (ytm1) -- (dt);
+  \draw[->] (ytm1) -- (yt);
+
+\end{tikzpicture}
+\end{figure}
+
+
+## For example, Solow model
+$$
+\begin{aligned}
+& (1) \ \Delta k = k_{t} - k_{t-1} = sy_{t-1} - \delta k_{t-1}
+\\ & \implies k_{t} = sy_{t-1} +(1-\delta) k_{t-1}
+\\ & (2) \ y_{t} = f(k_{t})
+\end{aligned}
+$$
+
+# What we are doing, in VAR terms
+$$
+\begin{aligned}
+y_{it}  = \beta d_{it} + \alpha_{11} y_{i,t-1} + \alpha_{12} d_{i,t-1}  + \epsilon_{y,it}
+\\  d_{it} = \alpha_{11} y_{i,t-1} + \alpha_{12} d_{i,t-1} + \delta z_i + \epsilon_{it}.
+\end{aligned}
+$$
+
+\pause
+
+$$
+\begin{aligned}
+\text{or } \begin{bmatrix} 1 & -\beta \\ \color{red}{0} & 1\end{bmatrix} \begin{bmatrix} y_{it} \\ d_{it} \end{bmatrix} = \begin{bmatrix} \alpha_{11} & \alpha_{12} \\ \alpha_{21} & \alpha_{22} \end{bmatrix} \begin{bmatrix} y_{i, t-1} \\ d_{i,t-1}\end{bmatrix} + \begin{bmatrix} \color{red}{0} \\ \delta \end{bmatrix} z_i + \begin{bmatrix}\epsilon_{y,it} \\ \epsilon_{d,it}\end{bmatrix}.
+\end{aligned}
+$$
+
+\pause
+
+- Note that lagged outcome enters the first-stage equation.
+- We are simply conducting a Cholesky decomposition. 
+
+\pause
+
+## What most IV papers are doing, in VAR terms
+$$
+\begin{aligned}
+\begin{bmatrix} 1 & -\beta \\ \color{red}{0} & 1\end{bmatrix} \begin{bmatrix} y_{it} \\ d_{it} \end{bmatrix} = \begin{bmatrix} \color{red}{0} & \color{red}{0} \\ \color{red}{0} & \color{red}{0} \end{bmatrix} \begin{bmatrix} y_{i, t-1} \\ d_{i,t-1}\end{bmatrix} + \begin{bmatrix} \color{red}{0} \\ \delta \end{bmatrix} z_i + \begin{bmatrix}\epsilon_{y,it} \\ \epsilon_{d,it}\end{bmatrix}.
+\end{aligned}
+$$
+
+
+# Results
+
+```{r}
+#| results: asis
+#| tbl-cap: "Two-stage least squares results, comparison"
+
+table_solow
+
+```
+
+
+# Monte Carlo results
+
+```{r fig.height=4}
+#| fig-cap: "Monte Carlo results, with treatment and outcome lag (500 iterations; 50 units; 100 observations per unit; ± 2 SD shaded)"
+
+plot_unbiased
+```
+
+## Note that
+1. We did not need a second set of instruments.
+2. Our instruments needn't be time-variant.
+3. Once $d_{it}$ is instrumented for, the coefficient on $d_{t-1}$ is unbiased.
+
+# Results by sample size
+(Work in progress...)
+
+# Discussion: is anyone talking about this?
+- Most of the papers are in epidemiology (see Labrecque and Swanson 2018 in particular). 
+  - This is because they use genetic variants to predict disease's effect (e.g., smoking) on health outcome (e.g., life expectancy), i.e., Mendelian randomization.
+  - Also, their theoretical derivations didn't hold up in my Monte Carlos.\pause
+- There is one development econ paper which talks about this (Casey and Klemp 2021), but their solution is questionable. 
+  - They propose to estimate $d_{it}$ and $d_{i, t-Q}$, and instrument for the latter with $z_i$, and use the resulting parameter to adjust the second-stage equation parameter. \pause
+  - The lag length is arbitrary. And even if it works, their method can't recovers only a "long-run" parameter, not the instantaneous parameter that is of policy interest. \pause
+- There are actually a lot of time series tools that can help analyze and solve the problem. But the Anderson-Rubin causal inference people don't talk to the time series people or something?
+
+
+# Discussion: how important is this result?
+1. This does not require a time-variant treatment (unlike proxy SVARs, aka SVARs with external instruments). \pause
+    - In lieu, this setup reverts back to a Cholesky identification (but this is not an issue, and in fact taken as given, in the causal inference setting). \pause
+2. The causal literature has been misspecifying a lot of IV papers. \pause
+    - Part of the causal revolution-revolution: TWFE DID estimator (Callaway & Sant'Anna 2020), issues with geographic IVs (Mellon 2022).
