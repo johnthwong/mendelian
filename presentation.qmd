@@ -16,7 +16,7 @@ execute:
   warning: false
 ---
 
-# Illustrating the issue with a DAG
+## Illustrating the issue with a DAG
 
 - Many historical IV papers use the following strategy.
   - e.g., AJR use settlers mortality ($z_i$) to instrument for constraints on the government's executive ($d_{it}$), and then estimate the latter's effect on output growth ($y_{it}$).
@@ -43,7 +43,7 @@ execute:
 
 - But note that $z_i$ is time-invariant, whereas $d_{it}$ is time-variant.
 
-# Illustrating the issue with a DAG
+## Illustrating the issue with a DAG
 \begin{figure}
 \centering
 \begin{tikzpicture}[node distance=2cm]
@@ -64,12 +64,13 @@ execute:
 \end{tikzpicture}
 \end{figure}
 
-- If $z_i$ affects $d_{it}$, then it must also also affect $d_{i,t-1}$. \pause
-- We can add $d_{i, t-2}$, $d_{i, t-3}$, and so forth.
+- If $z_i$ affects $d_{it}$, then it must also also affect $d_{i,t-1}$. 
+  - This violates exclusion restriction. \pause
+- We can add $d_{i, t-2}$, $d_{i, t-3}$, and so forth, to the graph.
 
-# Theoretical model
+## Theoretical model
 
-## Second-stage equation
+### Second-stage equation
 
 $$
 y_{it} = \beta_0 d_{it} + \beta_1 d_{i, t-1} + \epsilon_{y,it}.
@@ -79,7 +80,7 @@ $$
 - Note that this is a dynamic panel data model (DPDM).
 - This is quite similar to an autoregressive distributed lag (ADL) setup. \pause
 
-## First-stage equation
+### First-stage equation
 
 $$
 d_{it} = \delta z_i + \alpha_0 d_{i,t-1} + \epsilon_{d, it}.
@@ -87,7 +88,7 @@ $$
 
 \pause
 
-## What happens when we omit $d_{t-1}$?
+### What happens when we omit $d_{t-1}$ in the first stage?
 - Obtain the particular solution of the first-stage equation:
 
 $$
@@ -95,7 +96,7 @@ d_{it} = (\delta  \sum_{j =0}^{\infty} a_1^j)z_{i}  + \underbrace{\sum_{j=0}^{\i
 $$
 
 
-# Let me prove it to you
+## Let me prove it to you
 
 - I simulated a panel with 50 units, each with 1000 observations (to show the misspecified model is inconsistent). \pause
 
@@ -108,16 +109,16 @@ table_omitted
 
 ```
 
-# Monte Carlo Results
+## Monte Carlo Results
 - These results are consistently biased across samples. (Each unit has 100 observations.)
 
 ```{r fig.height=4}
-#| fig-cap: "Monte Carlo Results, Omitted Treatment Lag (500 iterations; ± 2 SD shaded)"
+#| fig-cap: "Monte Carlo Results, Omitted Treatment Lag (500 iterations; 50 units; 100 observations per unit; ± 2 SD shaded; black dotted line indicates true mean)"
 
 plot_biased
 ```
 
-# Solution
+## Solution
 - Including $Ld_{it}$ in both stages of the equation leads to a consistent estimator on all variables.
 
 ```{r}
@@ -128,7 +129,7 @@ table_lagd
 
 ```
 
-# Monte Carlo results
+## Monte Carlo results
 
 ```{r fig.height=4}
 #| fig-cap: "Monte Carlo results, with treatment lag (500 iterations; 50 units; 100 observations per unit; ± 2 SD shaded)"
@@ -136,7 +137,7 @@ table_lagd
 plot_labrecque
 ```
 
-# Generalize to bi-directional Granger causation
+## Generalize to bi-directional Granger causation
 
 - What if $y_{t-1}$ feeds into $y_{it}$ *and* $d_{it}$?
 
@@ -157,24 +158,31 @@ plot_labrecque
   \draw[->] (dtm1) -- (dt);
   \draw[->] (dtm1) -- (yt);
   \draw[->] (dt) -- (yt);
-  \draw[->] (dtm1) -- (ytm1);
-  \draw[->] (ytm1) -- (dt);
-  \draw[->] (ytm1) -- (yt);
-
+  \draw[->, dashed] (dtm1) -- (ytm1);
+  \draw[->, dashed] (ytm1) -- (dt);
+  \draw[->, dashed] (ytm1) -- (yt);
 \end{tikzpicture}
 \end{figure}
 
 
-## For example, Solow model
+### For example, the Solow model implies this system
 $$
 \begin{aligned}
 & (1) \ \Delta k = k_{t} - k_{t-1} = sy_{t-1} - \delta k_{t-1}
 \\ & \implies k_{t} = sy_{t-1} +(1-\delta) k_{t-1}
-\\ & (2) \ y_{t} = f(k_{t})
 \end{aligned}
 $$
 
-# Estimation
+\pause
+
+$$
+\begin{aligned}
+& (2) \ y_{t} = f(k_{t})
+\end{aligned}
+$$
+
+
+## Estimation
 
 We simulate then estimate the following equations:
 
@@ -196,13 +204,12 @@ $$
 $$
 
 \pause
-
+- Our procedure is analogous to a Cholesky decomposition. \pause
 - Note that lagged outcome enters the first-stage equation.
-- Our procedure is analogous to a Cholesky decomposition.
 
 \pause
 
-## What most historical IV papers are doing, in VAR terms
+### What most historical IV papers are doing, in VAR terms
 $$
 \begin{aligned}
 \begin{bmatrix} 1 & -\beta \\ \color{red}{0} & 1\end{bmatrix} \begin{bmatrix} y_{it} \\ d_{it} \end{bmatrix} = \begin{bmatrix} \color{red}{0} & \color{red}{0} \\ \color{red}{0} & \color{red}{0} \end{bmatrix} \begin{bmatrix} y_{i, t-1} \\ d_{i,t-1}\end{bmatrix} + \begin{bmatrix} \color{red}{0} \\ \delta \end{bmatrix} z_i + \begin{bmatrix}\epsilon_{y,it} \\ \epsilon_{d,it}\end{bmatrix}.
@@ -210,7 +217,7 @@ $$
 $$
 
 
-# Results
+## Results
 
 ```{r}
 #| results: asis
@@ -221,7 +228,7 @@ table_solow
 ```
 
 
-# Monte Carlo results
+## Monte Carlo results
 
 ```{r fig.height=4}
 #| fig-cap: "Monte Carlo results, with treatment and outcome lag (500 iterations; 50 units; 100 observations per unit; ± 2 SD shaded)"
@@ -231,15 +238,14 @@ plot_unbiased
 
 \pause
 
-## Note that
-1. We did not need a second set of instruments.
-2. Our instruments needn't be time-variant.
-3. Once $d_{it}$ is instrumented for, the coefficient on $d_{t-1}$ is unbiased.
+### Note that
+1. We didn't need a second set of instruments.
+2. Our instrument didn't need to be time-variant.
+3. We didn't need to instrument for $d_{t-1}$.
 
-# Results by sample size
-(Work in progress...)
+# Discussion
 
-# Discussion: is anyone talking about this?
+## Is anyone talking about this?
 - Most of the papers are in epidemiology (see Labrecque and Swanson 2018 in particular). 
   - This is because they use genetic variants to predict disease's effect (e.g., smoking) on health outcome (e.g., life expectancy), i.e., Mendelian randomization.
   - Also, their theoretical derivations didn't hold up in my Monte Carlos.\pause
@@ -249,7 +255,7 @@ plot_unbiased
 - There are actually a lot of time series tools that can help analyze and solve the problem. But the Anderson-Rubin causal inference people don't talk to the time series people or something?
 
 
-# Discussion: how important is this result?
+## How important is this result?
 1. This does not require a time-variant treatment (unlike proxy SVARs, aka SVARs with external instruments). \pause
     - In lieu, this setup reverts back to a Cholesky identification (but this is not an issue, and in fact taken as given in the causal inference setting). \pause
 2. The development economics literature has been misspecifying a lot of IV papers. \pause

@@ -1,0 +1,24 @@
+---
+title: "The Problem With Historical Instrumental Variables"
+author: "John T.H. Wong"
+format: 
+  pdf:
+    documentclass: article
+    papersize: letter
+    fontsize: 12pt
+    geometry:
+      - margin=1in
+bibliography: references.bib
+fig-pos: 'H'
+execute:
+  echo: false
+  message: false
+  warning: false
+number-sections: true
+---
+
+```{r}
+figsize = "80%"
+```
+
+
