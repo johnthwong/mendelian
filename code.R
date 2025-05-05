@@ -167,7 +167,8 @@ table_lagd <- texreg::texreg(
     "$Ld_t$"
   ),
   include.rsquared = FALSE,
-  include.adjrs = FALSE
+  include.adjrs = FALSE,
+  float.pos = "H"
 )
 
 # Test with IRFs ---------------------------------------------------------------
@@ -299,6 +300,7 @@ table_solow <- texreg::texreg(
   ),
   include.rsquared = FALSE,
   include.adjrs = FALSE,
+  float.pos = "H",
   no.margin = TRUE
 )
 
@@ -321,16 +323,40 @@ plot_density <- function(x){
     geom_area(data = subset(dens_df, x >= mu - 2*sigma & x <= mu + 2*sigma),
               fill = "skyblue", alpha = 0.5) +
     # Full density curve
-    geom_line(color = "black", linewidth = 0.5)+
-    # Add vertical lines for mean and ±2 SD
+    geom_line(color = "black", linewidth = 0.5) +
+    # theme(
+    #   axis.title = element_text(size = 20),
+    #   axis.text = element_text(size = 18)
+    # ) +
+    # Add vertical lines for mean
     geom_vline(xintercept = beta_0, color = "black", linetype = "dashed")  +
     labs(title = "",
-         x = "Estimated Coefficient", y = "Density") +
-    theme(
-      axis.title = element_text(size = 20),
-      axis.text = element_text(size = 18)
-    )
+         x = "Estimated Coefficient", y = "Density") 
 }
+
+mc_coef %>% ggplot(aes(x = d)) +
+  geom_histogram(color = "black", fill = "skyblue") +
+  # Add vertical lines for mean
+  geom_vline(xintercept = beta_0, color = "black", linetype = "dashed")  +
+  labs(title = "",
+       x = "Estimated Coefficient", y = "Count") +
+  theme(
+    axis.title = element_text(size = 20),
+    axis.text = element_text(size = 18)
+  )
+
+# mc_results_5_2 <- read.csv("mc_results_5_2.csv")
+# 
+# mc_results_5_2 %>% ggplot(aes(x = d)) +
+#   geom_histogram(color = "black", fill = "skyblue") +
+#   # Add vertical lines for mean
+#   geom_vline(xintercept = beta_0, color = "black", linetype = "dashed")  +
+#   labs(title = "",
+#        x = "Estimated Coefficient", y = "Count") +
+#   theme(
+#     axis.title = element_text(size = 20),
+#     axis.text = element_text(size = 18)
+#   )
 
 plot_unbiased = plot_density(mc_coef$d)
 
@@ -341,7 +367,20 @@ mc_coef_labreque = read.csv("mc_results_labrecque.csv")
 plot_labrecque = plot_density(mc_coef_labreque$d)
 
 
+# for (t_max in c(2, 5, 10, 50)){
+#   for (i_max in c(5, 10, 50)){
+#     mc = read.csv(paste0("mc_results_", i_max, "_", t_max, ".csv"))
+#     plot = plot_density(mc$d)
+#     print(plot)
+#   }
+# }
+
+# replication of casey and klemp------------------------------------------------
+
+
 
 # generating y and d simultaneously --------------------------------------------
 # i should know the first y_{t-1} = 0. the subsequent y_{t-1} are known. 
 # generate d_t (z_t) first.
+
+
