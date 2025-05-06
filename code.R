@@ -318,7 +318,7 @@ plot_density <- function(x){
   dens_df <- data.frame(x = dens$x, y = dens$y)
   
   # Plot
-  ggplot(dens_df, aes(x = x, y = y)) +
+  plot = ggplot(dens_df, aes(x = x, y = y)) +
     # Shade the ±1 SD region
     geom_area(data = subset(dens_df, x >= mu - 2*sigma & x <= mu + 2*sigma),
               fill = "skyblue", alpha = 0.5) +
@@ -332,6 +332,8 @@ plot_density <- function(x){
     geom_vline(xintercept = beta_0, color = "black", linetype = "dashed")  +
     labs(title = "",
          x = "Estimated Coefficient", y = "Density") 
+  
+  return(plot)
 }
 
 mc_coef %>% ggplot(aes(x = d)) +
@@ -366,14 +368,31 @@ plot_biased = plot_density(mc_coef_biased$d)
 mc_coef_labreque = read.csv("mc_results_labrecque.csv")
 plot_labrecque = plot_density(mc_coef_labreque$d)
 
+list = list(plot_labrecque)
+list = list(list, plot_unbiased)
 
-# for (t_max in c(2, 5, 10, 50)){
-#   for (i_max in c(5, 10, 50)){
-#     mc = read.csv(paste0("mc_results_", i_max, "_", t_max, ".csv"))
-#     plot = plot_density(mc$d)
-#     print(plot)
-#   }
-# }
+plot_list = list()
+idx = 1
+for (t_max in c(2, 5, 10, 50)) {
+  for (i_max in c(5, 10, 50)) {
+    code = paste0(i_max, "_", t_max)
+    mc = read.csv(paste0("mc_results_",code, ".csv"))
+    assign(paste0("mc_results_", code), mc)
+    mean = round(mean(mc$d), 2)
+    sd = round(sd(mc$d), 2)
+    assign(paste0("mean_", code), mean)
+    assign(paste0("sd_", code), sd)
+    plot = plot_density(mc$d)
+    plot_list[[idx]] = plot
+    idx = idx + 1
+  }
+}
+
+mean_50_10 = 
+sd_50_10 = round(sd(mc_results_50_10$d), 2)
+
+mean_10_50 = round(mean(mc_results_10_50$d), 2)
+sd_10_50 = round(sd(mc_results_10_50$d), 2)
 
 # replication of casey and klemp------------------------------------------------
 
